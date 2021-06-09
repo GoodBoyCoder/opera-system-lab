@@ -1,3 +1,4 @@
+import constant.DispatchTypeConstant;
 import dispatch.Dispatch;
 import dispatch.DispatchResult;
 import dispatch.multi.MultiFCFSDispatch;
@@ -16,37 +17,72 @@ import java.util.*;
  */
 public class ProcessMain {
     public static void main(String[] args) {
-//        //初始化作业列表
-//        int jobNumber = ProcessMenu.getJobNumber();
-//        List<Jcb> jcbList = ProcessMenu.initJob(jobNumber);
-//
-//        //按提交顺序生成对应的jcb控制块
-//        jcbList.sort(Comparator.comparing(Jcb::getSubmitTime));
-//
-        List<Jcb> jcbList = new LinkedList<>();
-        jcbList.add(new Jcb("A", 0, 3));
-        jcbList.add(new Jcb("B", 1, 1));
-        jcbList.add(new Jcb("C", 2, 2));
-        jcbList.add(new Jcb("D", 3, 1));
-//        jcbList.add(new Jcb("E", 4, 4));
-//
-//        //执行作业调度
-//        Dispatch dispatch = new FCFSDispatch();
-//        DispatchResult result = dispatch.run(jcbList);
-//
-//        //打印调度结果
-//        ProcessMenu.printResult(result);
-//
-        //执行SJF调度
-        System.out.println("最短作业调度");
-        Dispatch sjfDispatch = new SJFDispatch();
-        ProcessMenu.printResult(sjfDispatch.run(jcbList));
-//
-//        //执行HRN调度
-//        System.out.println("高响应比优先调度");
-//        Dispatch hrnDispatch = new HRNDispatch();
-//        ProcessMenu.printResult(hrnDispatch.run(jcbList));
-
+        int systemType;
+        do {
+            systemType = ProcessMenu.getSystemType();
+            if (0 == systemType) {
+                //单道
+                //初始化作业列表
+                int jobNumber = ProcessMenu.getJobNumber();
+                List<Jcb> jcbList = ProcessMenu.initJob(jobNumber);
+                //按提交顺序生成对应的jcb控制块
+                jcbList.sort(Comparator.comparing(Jcb::getSubmitTime));
+                //选择调度算法
+                int dispatchType = ProcessMenu.getDispatchType();
+                switch (dispatchType) {
+                    case DispatchTypeConstant.FCFS:
+                        System.out.println("先来先服务调度");
+                        Dispatch fcfsDispatch = new FCFSDispatch();
+                        ProcessMenu.printResult(fcfsDispatch.run(jcbList));
+                        break;
+                    case DispatchTypeConstant.SJF:
+                        System.out.println("最短作业调度");
+                        Dispatch sjfDispatch = new SJFDispatch();
+                        ProcessMenu.printResult(sjfDispatch.run(jcbList));
+                        break;
+                    case DispatchTypeConstant.HRN:
+                        System.out.println("高响应比优先调度");
+                        Dispatch hrnDispatch = new HRNDispatch();
+                        ProcessMenu.printResult(hrnDispatch.run(jcbList));
+                        break;
+                    default:
+                        break;
+                }
+            } else if (1 == systemType) {
+                //多道
+                int maxJob = ProcessMenu.getInt("该系统为几道系统：");
+                while (maxJob <= 0) {
+                    System.out.println("非法输入！！！");
+                    maxJob = ProcessMenu.getInt("该系统为几道系统：");
+                }
+                //初始化系统
+                Map<String, Integer> multiResource = ProcessMenu.initMultiResource("-----------------输入该系统拥有的资源---------------");
+                //初始化作业列表
+                int jobNumber = ProcessMenu.getJobNumber();
+                List<Jcb> jcbList = ProcessMenu.initMultiJob(jobNumber);
+                //按提交顺序生成对应的jcb控制块
+                jcbList.sort(Comparator.comparing(Jcb::getSubmitTime));
+                //选择调度算法
+                int dispatchType = ProcessMenu.getDispatchType();
+                switch (dispatchType) {
+                    case DispatchTypeConstant.FCFS:
+                        System.out.println("先来先服务调度");
+                        Dispatch fcfsDispatch = new MultiFCFSDispatch(multiResource, maxJob);
+                        ProcessMenu.printResult(fcfsDispatch.run(jcbList));
+                        break;
+                    case DispatchTypeConstant.SJF:
+                        System.out.println("最短作业调度");
+                        Dispatch sjfDispatch = new MultiSJFDispatch(multiResource, maxJob);
+                        ProcessMenu.printResult(sjfDispatch.run(jcbList));
+                        break;
+                    case DispatchTypeConstant.HRN:
+                        System.out.println("高响应比优先调度暂不支持！");
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } while (systemType != -1);
 
 //        List<Jcb> jcbListForMulti = new LinkedList<>();
 //        Map<String, Integer> needResourceMap = new HashMap<>(1);
