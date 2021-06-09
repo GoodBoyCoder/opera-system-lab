@@ -1,9 +1,6 @@
-import constant.CommandConstant;
 import entity.FileDirectory;
 import entity.Memory;
 import process.ProcessMenu;
-
-import java.util.Scanner;
 
 /**
  * @author GoodBoy
@@ -11,29 +8,17 @@ import java.util.Scanner;
  */
 public class Main {
     public static void main(String[] args) {
-        Memory memory = new Memory(10, 5, 500);
+        Memory memory = new Memory(10, 5, 10, 500);
 
-        FileDirectory directory = ProcessMenu.start(memory);
-        if (null == directory) {
-            System.out.println("感谢使用！！");
-            System.exit(0);
-        }
-        //显示该目录下的所有文件
-        ProcessMenu.showDirectory(directory);
-        //输入操作命令
+        do {
+            FileDirectory directory = ProcessMenu.start(memory);
+            if (null == directory) {
+                System.out.println("感谢使用！！");
+                System.exit(0);
+            }
+            //输入操作命令
+            ProcessMenu.doCommand(directory, memory);
+        } while (true);
 
-        //获取操作命令
-        String command = "";
-        //根据命令执行对应操作
-        switch (command) {
-            case CommandConstant.CREAT:
-            case CommandConstant.CLOSE:
-            case CommandConstant.OPEN:
-            case CommandConstant.DELETE:
-            case CommandConstant.READ:
-            case CommandConstant.WRITE:
-            default:
-                break;
-        }
     }
 }

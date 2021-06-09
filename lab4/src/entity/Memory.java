@@ -12,6 +12,7 @@ import java.util.Map;
 public class Memory {
     private final int maxUser;
     private final int maxRunningFile;
+    private final int maxCreatCount;
 
     /**
      * MFD主目录
@@ -25,9 +26,10 @@ public class Memory {
     private long totalSize;
     private long availableSize;
 
-    public Memory(int maxUser, int maxRunningFile, long totalSize) {
+    public Memory(int maxUser, int maxRunningFile, int maxCreatCount, long totalSize) {
         this.maxUser = maxUser;
         this.maxRunningFile = maxRunningFile;
+        this.maxCreatCount = maxCreatCount;
         this.totalSize = totalSize;
         mfdMap = new HashMap<>();
         afdList = new LinkedList<>();
@@ -60,5 +62,9 @@ public class Memory {
 
     public long getTotalSize() {
         return totalSize;
+    }
+
+    public int getMaxCreatCount() {
+        return maxCreatCount;
     }
 }

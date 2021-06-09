@@ -10,11 +10,13 @@ import java.util.List;
  */
 public class FileDirectory {
     private String directoryName;
+    private String userName;
     private List<File> fileList;
     private int size;
 
-    public FileDirectory(String directoryName) {
+    public FileDirectory(String directoryName, String userName) {
         this.directoryName = directoryName;
+        this.userName = userName;
         this.size = 0;
         fileList = new LinkedList<>();
     }
@@ -35,6 +37,10 @@ public class FileDirectory {
         return size;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
     /**
      * 添加文件
      *
@@ -52,7 +58,7 @@ public class FileDirectory {
                 return false;
             }
         }
-
+        size++;
         return fileList.add(file);
     }
 
@@ -77,6 +83,19 @@ public class FileDirectory {
         }
         System.out.println("查无此文件");
         return false;
+    }
+
+    public File exit(String fileName) {
+        if (null == fileName || "".equals(fileName)) {
+            return null;
+        }
+
+        for (File file : fileList) {
+            if (file.getFileName().equals(fileName)) {
+                return file;
+            }
+        }
+        return null;
     }
 
 }
