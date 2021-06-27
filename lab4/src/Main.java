@@ -17,7 +17,7 @@ public class Main {
                 System.exit(0);
             }
             //输入操作命令
-            ProcessMenu.doCommand(directory, memory);
+            ProcessMenu.doCommand(directory, memory, directory.getUserName());
         } while (true);
 
     }

@@ -52,11 +52,9 @@ public class FileDirectory {
             return false;
         }
         //检查是否有重名
-        for (File f : fileList) {
-            if (f.getFileName().equals(file.getFileName())) {
-                System.out.println("文件名重复！");
-                return false;
-            }
+        if (!checkName(file.getFileName())) {
+            System.out.println("文件名重复！！");
+            return false;
         }
         size++;
         return fileList.add(file);
@@ -98,4 +96,29 @@ public class FileDirectory {
         return null;
     }
 
+    public boolean renameFile(String oldFileName, String newFileName) {
+        File file = exit(oldFileName);
+        if (null == file) {
+            System.out.println("文件不存在！！！");
+            return false;
+        }
+
+        if (checkName(newFileName)) {
+            file.setFileName(newFileName);
+            return true;
+        } else {
+            System.out.println("新文件名重复！！！");
+            return false;
+        }
+    }
+
+    public boolean checkName(String fileName) {
+        //检查是否有重名
+        for (File f : fileList) {
+            if (f.getFileName().equals(fileName)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

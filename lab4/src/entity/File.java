@@ -1,6 +1,7 @@
 package entity;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * @author GoodBoy
@@ -35,19 +36,30 @@ public class File {
      * 文件打开状态 true-打开
      */
     private boolean status;
+    /**
+     * 文件所有者
+     */
+    private String orderName;
 
-    public File(String fileName, boolean[] accessCode) {
+    /**
+     * 是否是共享文件
+     */
+    private boolean share;
+
+    public File(String fileName, boolean[] accessCode, String userName) {
         this.fileName = fileName;
         this.accessCode = accessCode;
         this.length = 0;
         this.readPoint = 0;
         this.writePoint = this.length;
         this.status = false;
+        this.orderName = userName;
+        this.share = false;
     }
 
-    public File(String fileName) {
+    public File(String fileName, String userName) {
         //默认可读可写可执行
-        this(fileName, new boolean[]{true, true, true});
+        this(fileName, new boolean[]{true, true, true}, userName);
     }
 
     public String getFileName() {
@@ -98,6 +110,18 @@ public class File {
         this.status = status;
     }
 
+    public boolean isShare() {
+        return share;
+    }
+
+    public String getOrderName() {
+        return orderName;
+    }
+
+    public void setShare(boolean share) {
+        this.share = share;
+    }
+
     @Override
     public String toString() {
         return "File{" +
@@ -105,5 +129,24 @@ public class File {
                 ", accessCode=" + Arrays.toString(accessCode) +
                 ", length=" + length +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof File)) {
+            return false;
+        }
+        File file = (File) o;
+        return isStatus() == file.isStatus() && isShare() == file.isShare() && getFileName().equals(file.getFileName()) && Arrays.equals(getAccessCode(), file.getAccessCode()) && getOrderName().equals(file.getOrderName());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(getFileName(), isStatus(), getOrderName(), isShare());
+        result = 31 * result + Arrays.hashCode(getAccessCode());
+        return result;
     }
 }

@@ -23,6 +23,11 @@ public class Memory {
      */
     private List<File> afdList;
 
+    /**
+     * 共享文件目录
+     */
+    private List<File> sharedFileList;
+
     private long totalSize;
     private long availableSize;
 
@@ -34,6 +39,7 @@ public class Memory {
         mfdMap = new HashMap<>();
         afdList = new LinkedList<>();
         availableSize = totalSize;
+        sharedFileList = new LinkedList<>();
     }
 
     public long getAvailableSize() {
@@ -66,5 +72,9 @@ public class Memory {
 
     public int getMaxCreatCount() {
         return maxCreatCount;
+    }
+
+    public List<File> getSharedFileList() {
+        return sharedFileList;
     }
 }

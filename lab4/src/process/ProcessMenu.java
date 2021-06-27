@@ -57,7 +57,7 @@ public class ProcessMenu {
         return "Y".equals(choice);
     }
 
-    public static void showDirectory(FileDirectory fileDirectory) {
+    public static void showDirectory(FileDirectory fileDirectory, List<File> shareFile) {
         if (null == fileDirectory) {
             return;
         }
@@ -66,27 +66,41 @@ public class ProcessMenu {
             return;
         }
         List<File> fileList = fileDirectory.getFileList();
-        System.out.println("文件名\t\t文件保护码\t\t文件长度\t\t文件打开状态");
+        System.out.println("文件名\t\t文件保护码\t\t文件长度\t\t文件打开状态\t\t文件共享状态");
         for (File file : fileList) {
             System.out.println(file.getFileName() + "\t\t" +
                     Arrays.toString(file.getAccessCode()) + "\t\t" +
-                    file.getLength() + "\t\t" + (file.isStatus() ? "打开" : "未打开"));
+                    file.getLength() + "\t\t" +
+                    (file.isStatus() ? "打开" : "未打开") + "\t\t" +
+                    (file.isShare() ? "共享" : "未共享"));
+        }
+
+        if (null != shareFile && !shareFile.isEmpty()) {
+            System.out.println("共享文件");
+            System.out.println("文件名\t\t文件保护码\t\t文件长度\t\t文件打开状态\t\t文件共享状态");
+            for (File file : shareFile) {
+                System.out.println(file.getOrderName() + "." + file.getFileName() + "\t\t" +
+                        Arrays.toString(file.getAccessCode()) + "\t\t" +
+                        file.getLength() + "\t\t" +
+                        (file.isStatus() ? "打开" : "未打开") + "\t\t" +
+                        (file.isShare() ? "共享" : "未共享"));
+            }
         }
     }
 
-    public static void doCommand(FileDirectory directory, Memory memory) {
+    public static void doCommand(FileDirectory directory, Memory memory, String userName) {
         int creatFile = memory.getMaxCreatCount();
         Scanner scanner = new Scanner(System.in);
         do {
             System.out.println("当前目录文件");
-            showDirectory(directory);
+            showDirectory(directory, memory.getSharedFileList());
             System.out.println("输入操作指令：");
             String command = scanner.nextLine();
             if ("exit".equals(command.toLowerCase(Locale.ROOT))) {
                 break;
             }
             String[] split = command.split("\\s+");
-            if (split.length != 2) {
+            if (split.length < 2) {
                 System.out.println("命令格式错误！");
             } else {
                 String commandReal = split[0].toLowerCase(Locale.ROOT);
@@ -96,7 +110,7 @@ public class ProcessMenu {
                     case CommandConstant.CREAT:
                         if (creatFile > 0) {
                             //创建文件
-                            if (creat(directory, fileName)) {
+                            if (creat(directory, fileName, userName)) {
                                 System.out.println("文件创建成功");
                             } else {
                                 System.out.println("文件创建失败");
@@ -136,11 +150,20 @@ public class ProcessMenu {
                         break;
                     case CommandConstant.READ:
                         //读取文件
-                        read(fileName, memory.getAfdList());
+                        read(fileName, memory.getAfdList(), userName);
                         break;
                     case CommandConstant.WRITE:
                         //文件写入
-                        write(fileName, memory.getAfdList());
+                        write(fileName, memory.getAfdList(), userName);
+                        break;
+                    case CommandConstant.RENAME:
+                        if (split.length == 3 && rename(directory, split[1], split[2])) {
+                            System.out.println("文件重命名成功");
+                        } else if (split.length != 3) {
+                            System.out.println("命令格式错误[command oldName newName]");
+                        } else {
+                            System.out.println("文件重命名失败");
+                        }
                         break;
                     default:
                         break;
@@ -149,12 +172,12 @@ public class ProcessMenu {
         } while (true);
     }
 
-    public static boolean creat(FileDirectory fileDirectory, String fileName) {
+    public static boolean creat(FileDirectory fileDirectory, String fileName, String userName) {
         if (null == fileDirectory || null == fileName) {
             System.out.println("文件目录为空");
             return false;
         }
-        return fileDirectory.saveFile(new File(fileName));
+        return fileDirectory.saveFile(new File(fileName, userName));
     }
 
     public static boolean close(String fileName, List<File> afd) {
@@ -214,8 +237,8 @@ public class ProcessMenu {
         }
     }
 
-    public static boolean read(String fileName, List<File> afd) {
-        if (null == fileName || null == afd) {
+    public static boolean read(String fileName, List<File> afd, String userName) {
+        if (null == fileName || null == afd || null == userName) {
             System.out.println("系统错误");
             return false;
         }
@@ -227,7 +250,7 @@ public class ProcessMenu {
                 file.setReadPoint(0);
                 //检查读权限
                 boolean[] accessCode = file.getAccessCode();
-                if (accessCode[File.READ_ACCESS]) {
+                if (file.getOrderName().equals(userName) || accessCode[File.READ_ACCESS]) {
                     do {
                         System.out.println("当前读指针：" + file.getReadPoint() + " 文件大小：" + file.getLength());
                         System.out.println("输入要读的位置(输入exit退出)：");
@@ -259,7 +282,7 @@ public class ProcessMenu {
         return false;
     }
 
-    public static boolean write(String fileName, List<File> afd) {
+    public static boolean write(String fileName, List<File> afd, String userName) {
         if (null == fileName || null == afd) {
             System.out.println("系统错误");
             return false;
@@ -272,7 +295,7 @@ public class ProcessMenu {
                 boolean[] accessCode = file.getAccessCode();
                 file.setWritePoint(file.getLength());
                 file.setReadPoint(0);
-                if (accessCode[File.WRITE_ACCESS]) {
+                if (file.getOrderName().equals(userName) || accessCode[File.WRITE_ACCESS]) {
                     do {
                         System.out.println("当前写指针：" + file.getWritePoint());
                         System.out.println("写点什么(输入exit退出)：");
@@ -292,5 +315,43 @@ public class ProcessMenu {
         }
         System.out.println("当前无正在运行的该文件");
         return false;
+    }
+
+    public static boolean rename(FileDirectory directory, String fileName, String newFileName) {
+        if (null == directory || null == fileName || null == newFileName) {
+            System.out.println("参数错误");
+            return false;
+        }
+        return directory.renameFile(fileName, newFileName);
+    }
+
+    public static void shared(FileDirectory directory, String fileName, List<File> shareList, boolean[] accessCode) {
+        if (null == directory || null == fileName || accessCode.length != 3) {
+            System.out.println("参数错误");
+            return;
+        }
+        File file = directory.exit(fileName);
+        if (null == file) {
+            System.out.println("当前目录文件不存在");
+            return;
+        }
+        file.setShare(Boolean.TRUE);
+        file.setAccessCode(accessCode);
+        shareList.add(file);
+    }
+
+    public static void dismiss(FileDirectory directory, String fileName, List<File> shareMap) {
+        if (null == directory || null == fileName || null == shareMap) {
+            System.out.println("参数错误");
+            return;
+        }
+        File file = directory.exit(fileName);
+        if (null == file) {
+            System.out.println("当前目录文件不存在");
+            return;
+        }
+        shareMap.remove(file);
+        file.setShare(Boolean.FALSE);
+        file.setAccessCode(new boolean[]{true, true, true});
     }
 }

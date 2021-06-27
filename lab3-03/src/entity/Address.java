@@ -27,4 +27,12 @@ public class Address {
     public long getOffset() {
         return offset;
     }
+
+    @Override
+    public String toString() {
+        return "Address{" +
+                "sectionId=" + sectionId +
+                ", offset=" + offset +
+                '}';
+    }
 }

@@ -80,6 +80,7 @@ public class AddressTranslation {
         //打印当前段表/页表
         System.out.println("-------------当前段信息-----------------");
         printSection(sectionList);
+        System.out.println("输入地址：" + address);
         System.out.println("当前地址位于第" + sectionId + "段, 第" + pageId + "页，业内偏移为" + offsetInPage);
         //形成物理地址返回
         return page.getRealAddress() * Page.PAGE_SIZE + offsetInPage;
@@ -110,8 +111,8 @@ public class AddressTranslation {
         System.out.println("页号\t是否调入内存\t块号");
         int index = 0;
         for (Page page : pages) {
-            System.out.println(index++ + "\t" +
-                    (page.getExist() ? "是" : "否") + "\t" +
+            System.out.println(index++ + "\t\t" +
+                    (page.getExist() ? "是" : "否") + "\t\t" +
                     (page.getExist() ? page.getRealAddress() : ""));
         }
     }
